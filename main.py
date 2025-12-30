@@ -1,6 +1,8 @@
 from aiogram import Bot, Dispatcher
 from dotenv import load_dotenv
 import asyncio, os
+from database.models import create_table
+from handlers.start import start_rt
 
 
 #Загрузка из .env
@@ -18,10 +20,12 @@ dp = Dispatcher()
 
 #Функция для запуска бота
 async def main():
+    #Создание таблиц
+    await create_table()
     #Удаляем все накполеные обращения при запуске
     await bot.delete_webhook(drop_pending_updates=True)
     #Подключение роутеров
-    #dp.include_routers()
+    dp.include_routers(start_rt)
     #Запуск polling (Проще говоря запуск бота)
     await dp.start_polling(bot)
 

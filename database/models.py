@@ -3,6 +3,7 @@ from sqlalchemy import ForeignKey
 from sqlalchemy.types import BIGINT, String, DateTime, Text, Numeric, Boolean, Integer
 from database.session import engine
 from datetime import datetime
+from typing import Optional
 
 
 class Base(DeclarativeBase):
@@ -15,8 +16,8 @@ class Users(Base):
 
     id: Mapped[int] = mapped_column(BIGINT, primary_key=True)
     username: Mapped[str] = mapped_column(String(40))
-    frist_name: Mapped[str] = mapped_column(String)
-    last_name: Mapped[str] = mapped_column(String)
+    first_name: Mapped[str] = mapped_column(String)
+    last_name: Mapped[Optional[str]] = mapped_column(String)
     created_ad: Mapped[datetime] = mapped_column(DateTime, default=datetime.now())
 
     cart = relationship("Cart", back_populates="user")
@@ -69,7 +70,7 @@ class Orders(Base):
     __tablename__ = 'orders'
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    user_id: Mapped[int] = mapped_column(ForeignKey('users_id'))
+    user_id: Mapped[int] = mapped_column(ForeignKey('users.id'))
     total_price: Mapped[float] = mapped_column(Numeric(10, 2))
     status: Mapped[str] = mapped_column(String(8))
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now())
@@ -92,4 +93,6 @@ class Order_items(Base):
     product = relationship("Products", back_populates="order_item")
 
 
-Base.metadata.create_all(engine)
+async def create_table():
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)

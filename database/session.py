@@ -5,7 +5,7 @@ import os
 
 
 #Выгрузка из .env
-load_dotenv
+load_dotenv()
 DB_URL = os.getenv("DB_URL")
 
 
