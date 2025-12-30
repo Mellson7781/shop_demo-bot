@@ -3,6 +3,7 @@ from dotenv import load_dotenv
 import asyncio, os
 from database.models import create_table
 from handlers.start import start_rt
+from handlers.catalog import catalog_rt
 
 
 #Загрузка из .env
@@ -25,7 +26,8 @@ async def main():
     #Удаляем все накполеные обращения при запуске
     await bot.delete_webhook(drop_pending_updates=True)
     #Подключение роутеров
-    dp.include_routers(start_rt)
+    dp.include_routers(start_rt,
+                    catalog_rt)
     #Запуск polling (Проще говоря запуск бота)
     await dp.start_polling(bot)
 

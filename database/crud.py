@@ -1,6 +1,6 @@
 from sqlalchemy import select
 from database.session import AsyncSessionLocal
-from database.models import Users
+from database.models import Users, Categories, Products
 
 
 #Получение пользователя по tg id
@@ -26,3 +26,16 @@ async def user_add(
                 last_name=last_name
             )
             session.add(user)
+
+
+#Получение всех категорий
+async def get_categories() -> list[Categories]:
+    async with AsyncSessionLocal() as session:
+        return await session.scalars(select(Categories))
+
+
+#Получение всех товаров из категории
+async def get_products_in_cat(id: int) -> list[Products]:
+    async with AsyncSessionLocal() as session:
+        return await session.scalars(select(Products).where(Products.category_id == id))
+     
