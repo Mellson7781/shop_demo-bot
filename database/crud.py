@@ -1,12 +1,13 @@
-from sqlalchemy import select
+from sqlalchemy import select, update, delete
 from database.session import AsyncSessionLocal
-from database.models import Users, Categories, Products
+from database.models import Users, Categories, Products, Cart
 
 
 #Получение пользователя по tg id
 async def get_user_by_id(tg_id: int) -> Users | None:
     async with AsyncSessionLocal() as session:
-        result = await session.scalar(select(Users).where(Users.id == tg_id))
+        result = await session.scalar(select(Users)
+                                      .where(Users.id == tg_id))
         return result
 
 
@@ -31,11 +32,96 @@ async def user_add(
 #Получение всех категорий
 async def get_categories() -> list[Categories]:
     async with AsyncSessionLocal() as session:
-        return await session.scalars(select(Categories))
+        result = await session.scalars(select(Categories))
+        return result.all()
 
 
 #Получение всех товаров из категории
 async def get_products_in_cat(id: int) -> list[Products]:
     async with AsyncSessionLocal() as session:
-        return await session.scalars(select(Products).where(Products.category_id == id))
-     
+        result = await session.scalars(select(Products)
+                                     .where(Products.category_id == id))
+        return result.all()
+
+
+#Получение конкретного товара по id
+async def get_product(id: int) -> Products:
+    async with AsyncSessionLocal() as session:
+        result =  await session.scalars(select(Products)
+                                     .where(Products.id == id))
+        return result.first()
+
+
+#Добавление товара в корзину
+async def add_in_cart(
+        user_id: int, product_id: int        
+):
+    async with AsyncSessionLocal() as session:
+        async with session.begin():
+            in_cart = await session.scalars(select(Cart)
+                                .where(
+                                    Cart.user_id == user_id,
+                                    Cart.product_id == product_id))
+            cart_item = in_cart.first() 
+            if cart_item is None:
+                product = Cart(user_id = user_id,
+                              product_id = product_id,
+                              quantity = 1)
+                session.add(product)
+            else:
+                await session.execute(
+                    update(Cart)
+                    .where(Cart.user_id == user_id, 
+                          Cart.product_id == product_id)
+                    .values(quantity = cart_item.quantity + 1))
+
+
+#Показать корзину конкретного пользователя
+async def user_cart(id: int) -> list[Cart]:
+    async with AsyncSessionLocal() as session:
+        async with session.begin():
+            cart = await session.scalars(select(Cart)
+                                .where(
+                                Cart.user_id == id
+                                ))
+            
+            return cart.all()
+
+
+#Покказать элемент из корзины по id
+async def get_cart(id: int) -> Cart | None:
+    async with AsyncSessionLocal() as session:
+        async with session.begin():
+            result = await session.scalars(select(Cart)
+                                            .where(
+                                                Cart.id == id
+                                            ))
+            return result.first()
+
+#Добавление товара в корзине по id
+async def cart_plus(id: int):
+    async with AsyncSessionLocal() as session:
+        async with session.begin():
+            await session.execute(
+                    update(Cart)
+                    .where(Cart.id == id)
+                    .values(quantity = Cart.quantity + 1))
+
+
+#Убавление товара в корзине по id
+async def cart_minus(id: int):
+    async with AsyncSessionLocal() as session:
+        async with session.begin():
+            await session.execute(
+                    update(Cart)
+                    .where(Cart.id == id)
+                    .values(quantity = Cart.quantity - 1))
+
+
+#Удаление товара из корзины
+async def cart_product_del(id: int):
+    async with AsyncSessionLocal() as session:
+        async with session.begin():
+            await session.execute(
+                    delete(Cart)
+                    .where(Cart.id == id))

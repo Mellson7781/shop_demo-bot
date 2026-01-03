@@ -4,6 +4,7 @@ import asyncio, os
 from database.models import create_table
 from handlers.start import start_rt
 from handlers.catalog import catalog_rt
+from handlers.cart import catr_rt
 
 
 #Загрузка из .env
@@ -27,7 +28,7 @@ async def main():
     await bot.delete_webhook(drop_pending_updates=True)
     #Подключение роутеров
     dp.include_routers(start_rt,
-                    catalog_rt)
+                    catalog_rt, catr_rt)
     #Запуск polling (Проще говоря запуск бота)
     await dp.start_polling(bot)
 

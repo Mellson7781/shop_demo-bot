@@ -1,18 +1,28 @@
 from aiogram import Router, F
 from aiogram.types import Message, CallbackQuery, FSInputFile
-from keyboards.inline import kb_menu_categories, menu_add_basket, menu_back
-from database.crud import get_products_in_cat
+from keyboards.inline import (kb_menu_categories, 
+                              kb_in_product, 
+                              kb_product_in_cat)
+from database.crud import get_product
 
 
 #Роутер католога 
 catalog_rt = Router()
 
 
+#Католог:
 @catalog_rt.message(F.text == "🛍 Каталог")
 async def get_categories(message: Message):
     await message.answer('🗂Выберите категорию:', 
                    reply_markup= await kb_menu_categories())
-    
+
+
+@catalog_rt.callback_query(F.data == "catalog")
+async def get_categories(query: CallbackQuery):
+    await query.answer("Вы зашли в католог!")
+    await query.message.edit_text('🗂Выберите категорию:', 
+                   reply_markup= await kb_menu_categories())
+#
 
 #Получение товаров из выбраной категории
 @catalog_rt.callback_query(F.data.startswith('cat_'))
@@ -21,19 +31,31 @@ async def products_in_cat(query: CallbackQuery):
     await query.message.delete()
 
     cat_id = int(query.data.split('_')[1])
-    products = await get_products_in_cat(id=cat_id)
+    await query.message.answer("📌 Доступные товары🛒:",
+            reply_markup = await kb_product_in_cat(cat_id))
 
-    for item in products:
+   
+
+
+#Получение карточки товара
+@catalog_rt.callback_query(F.data.startswith('product_'))
+async def product_info(query: CallbackQuery):
+    await query.answer("Вы смотрите карточку товара!")
+    await query.message.delete()
+
+    product_id = int(query.data.split('_')[1])
+    products = await get_product(id=product_id)
+
+    if products.is_active:
         await query.message.answer_photo(
-            FSInputFile(item.image_url),
-            caption=f"💻Название: {item.name}\n\n"
-            f"📄Описание:\n{item.description}\n\n"
-            f"💳 Цена: {item.price}🏷 Руб",
-            reply_markup=menu_add_basket) 
-
-    await query.message.answer("📌 Вернуться", reply_markup= await menu_back('cat'))
+            FSInputFile(products.image_url),
+            caption=f"💻Название: {products.name}\n\n"
+            f"📄Описание:\n{products.description}\n\n"
+            f"💳 Цена: {products.price}🏷 Руб",
+            reply_markup = await kb_in_product(id=products.id))
 
 
+#Кнопка назад
 @catalog_rt.callback_query(F.data == 'back_cat')
 async def get_categories(query: CallbackQuery):
     await query.answer("Вы вернулись назад")
