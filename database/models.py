@@ -71,8 +71,11 @@ class Orders(Base):
 
     id: Mapped[int] = mapped_column(primary_key=True)
     user_id: Mapped[int] = mapped_column(ForeignKey('users.id'))
+    name: Mapped[str] = mapped_column(String)
+    contact: Mapped[str] = mapped_column(String)
     total_price: Mapped[float] = mapped_column(Numeric(10, 2))
     status: Mapped[str] = mapped_column(String(8))
+    payment_id: Mapped[str] = mapped_column(String)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now())
 
     user = relationship("Users", back_populates="order")

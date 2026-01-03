@@ -70,8 +70,6 @@ async def kb_cart_menu(id: int):
     return builder.as_markup()
 
 
-
-
 #Управление товаром в корзине
 async def kb_in_cart_prod(id: int):
     builder = InlineKeyboardBuilder()
@@ -87,4 +85,33 @@ async def kb_in_cart_prod(id: int):
     
     builder.adjust(3,1)
     
+    return builder.as_markup()
+
+
+#Подтверждение товаров в корзине
+kb_orders_confirmation = InlineKeyboardMarkup(inline_keyboard=[    
+    [InlineKeyboardButton(text="✅ Далее", callback_data="order_next"),
+    InlineKeyboardButton(text="❌ Отмена", callback_data="cart")]
+])
+
+
+#Подтверждение заказа
+kb_orders_payment_conf = InlineKeyboardMarkup(inline_keyboard=[    
+    [InlineKeyboardButton(text="✅ Да", callback_data="order_payment"),
+    InlineKeyboardButton(text="❌ Нет", callback_data="cart")]
+])
+
+
+#Подтверждение заказа
+kb_orders_payment_conf = InlineKeyboardMarkup(inline_keyboard=[    
+    [InlineKeyboardButton(text="✅ Да", callback_data="order_payment"),
+    InlineKeyboardButton(text="❌ Нет", callback_data="cart")]
+])
+
+
+#Способы оплаты
+async def kb_payment(order_id: int):
+    builder = InlineKeyboardBuilder()
+
+    builder.button(text="💳Оплата", callback_data=f"payment:{order_id}")
     return builder.as_markup()

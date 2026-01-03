@@ -1,6 +1,8 @@
 from sqlalchemy import select, update, delete
 from database.session import AsyncSessionLocal
-from database.models import Users, Categories, Products, Cart
+from database.models import (Users, Categories, 
+                             Products, Cart, 
+                             Orders, Order_items)
 
 
 #Получение пользователя по tg id
@@ -125,3 +127,73 @@ async def cart_product_del(id: int):
             await session.execute(
                     delete(Cart)
                     .where(Cart.id == id))
+
+
+#Добавление заказа в бд
+async def create_order(user_id: int, 
+                       name: str, contact: str,
+                       total_price: float):
+    async with AsyncSessionLocal() as session:
+        async with session.begin():
+            #Получение корзины пользователя
+            cart_items = await user_cart(user_id)
+
+            #Проверка корзины
+            if not cart_items:
+                raise ValueError("Корзина пуста")
+            
+            #Создание заказа
+            order = Orders(
+                user_id=user_id,
+                name = name,
+                contact = contact,
+                total_price = total_price,
+                status = "created",
+                payment_id = ""
+            )
+            session.add(order)
+            await session.flush()
+
+            # 3. Создаём order_items
+            for item in cart_items:
+                price = await session.scalar(
+                select(Products.price)
+                .where(Products.id == item.product_id))
+
+                order_item = Order_items(
+                    order_id=order.id,
+                    product_id=item.product_id,
+                    price=price,
+                    quantity=item.quantity
+                )
+                session.add(order_item)
+
+            # 4 Очистка корзины
+            for item in cart_items:
+                await session.delete(item)
+            
+        return order.id
+
+
+#Получение заказа по id
+async def get_order(id: int) -> Orders | None:
+    async with AsyncSessionLocal() as session:
+        async with session.begin():
+            order = await session.scalars(select(Orders)
+                                          .where(Orders.id == id))
+            return order.first()
+
+
+#Изменение статуса у заказа на оплачено по id
+async def order_status_paid(id: int, pay_id: str):
+    async with AsyncSessionLocal() as session:
+        async with session.begin():
+            order = await get_order(id)
+
+            if order.status != "created":
+                raise ValueError("status not created!")
+            
+            await session.execute(
+                    update(Orders)
+                    .where(Orders.id == id)
+                    .values(status = "paid", payment_id = pay_id))

@@ -1,5 +1,6 @@
 from aiogram import Router, F
 from aiogram.types import Message, CallbackQuery, FSInputFile
+from aiogram.fsm.context import FSMContext
 from keyboards.inline import (kb_menu_categories, 
                               kb_in_product, 
                               kb_product_in_cat)
@@ -12,7 +13,8 @@ catalog_rt = Router()
 
 #Католог:
 @catalog_rt.message(F.text == "🛍 Каталог")
-async def get_categories(message: Message):
+async def get_categories(message: Message, state: FSMContext):
+    await state.clear()
     await message.answer('🗂Выберите категорию:', 
                    reply_markup= await kb_menu_categories())
 
