@@ -7,7 +7,7 @@ from database.crud import order_status_paid, get_order
 payment_rt = Router()
 
 
-#Вызовв функции send_payment_invoice
+#Вызов функции send_payment_invoice
 @payment_rt.callback_query(F.data.startswith("payment:"))
 async def send_invoice(query: CallbackQuery, bot: Bot):
     await query.answer("Проведение опллаты")
@@ -30,6 +30,7 @@ async def process_pre_checkout(pre_checkout: PreCheckoutQuery):
     await pre_checkout.answer(ok=True)
 
 
+#Положительный ответ платежной системы
 @payment_rt.message()
 async def successful_payment_handler(message: Message):
     if message.successful_payment:

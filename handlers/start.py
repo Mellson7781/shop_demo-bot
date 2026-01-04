@@ -9,6 +9,7 @@ from keyboards.reply import main_menu_kb
 start_rt = Router()
 
 
+#Обработка команды старт
 @start_rt.message(CommandStart())
 async def start(message: Message):
     user_id = message.from_user.id

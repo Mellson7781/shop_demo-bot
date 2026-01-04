@@ -197,3 +197,23 @@ async def order_status_paid(id: int, pay_id: str):
                     update(Orders)
                     .where(Orders.id == id)
                     .values(status = "paid", payment_id = pay_id))
+
+
+#Изменение статуса у заказов на отмененый
+async def order_status_canel(user_id: int):
+    async with AsyncSessionLocal() as session:
+        async with session.begin():
+            await session.execute(
+                    update(Orders)
+                    .where(Orders.user_id == user_id,
+                           Orders.status == "created")
+                    .values(status = "canel"))
+            
+
+#Получение всех заказов пользователя
+async def get_orders(id: int) -> list[Orders]:
+    async with AsyncSessionLocal() as session:
+        async with session.begin():
+            order = await session.scalars(select(Orders)
+                                          .where(Orders.user_id == id))
+            return order.all()

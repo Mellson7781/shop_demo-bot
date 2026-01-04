@@ -16,7 +16,6 @@ catr_rt = Router()
 async def render_cart(user_id: int):
     cart = await user_cart(id=user_id)
 
-
     count = 0
     total_price = 0
 

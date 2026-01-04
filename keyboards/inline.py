@@ -115,3 +115,10 @@ async def kb_payment(order_id: int):
 
     builder.button(text="💳Оплата", callback_data=f"payment:{order_id}")
     return builder.as_markup()
+
+
+#Кнопка статусов заказа
+kb_filter_my_order = InlineKeyboardMarkup(inline_keyboard=[
+    [InlineKeyboardButton(text="✅Завершенные", callback_data="completed"),
+     InlineKeyboardButton(text="❌Не завершенные", callback_data="not_completed")]
+])
