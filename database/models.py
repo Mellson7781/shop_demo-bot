@@ -15,7 +15,7 @@ class Users(Base):
     __tablename__ = 'users'
 
     id: Mapped[int] = mapped_column(BIGINT, primary_key=True)
-    username: Mapped[str] = mapped_column(String(40))
+    username: Mapped[Optional[str]] = mapped_column(String(40))
     first_name: Mapped[str] = mapped_column(String)
     last_name: Mapped[Optional[str]] = mapped_column(String)
     created_ad: Mapped[datetime] = mapped_column(DateTime, default=datetime.now())
