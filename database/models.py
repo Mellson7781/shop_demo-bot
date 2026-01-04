@@ -4,6 +4,7 @@ from sqlalchemy.types import BIGINT, String, DateTime, Text, Numeric, Boolean, I
 from database.session import engine
 from datetime import datetime
 from typing import Optional
+from decimal import Decimal
 
 
 class Base(DeclarativeBase):
@@ -42,7 +43,7 @@ class Products(Base):
     category_id: Mapped[int] = mapped_column(ForeignKey("categories.id"))
     name: Mapped[str] = mapped_column(String)
     description: Mapped[str] = mapped_column(Text)
-    price: Mapped[float] = mapped_column(Numeric(10,2))
+    price: Mapped[Decimal] = mapped_column(Numeric(10,2))
     image_url: Mapped[str] = mapped_column(Text)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now())
@@ -71,8 +72,6 @@ class Orders(Base):
 
     id: Mapped[int] = mapped_column(primary_key=True)
     user_id: Mapped[int] = mapped_column(ForeignKey('users.id'))
-    name: Mapped[str] = mapped_column(String)
-    contact: Mapped[str] = mapped_column(String)
     total_price: Mapped[float] = mapped_column(Numeric(10, 2))
     status: Mapped[str] = mapped_column(String(8))
     payment_id: Mapped[str] = mapped_column(String)

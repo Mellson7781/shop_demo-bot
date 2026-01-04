@@ -16,11 +16,3 @@ async def get_products_in_cat(id: int) -> list[Products]:
         result = await session.scalars(select(Products)
                                      .where(Products.category_id == id))
         return result.all()
-    
-
-#Получение конкретного товара по id
-async def get_product(id: int) -> Products:
-    async with AsyncSessionLocal() as session:
-        result =  await session.scalars(select(Products)
-                                     .where(Products.id == id))
-        return result.first()

@@ -1,33 +1,41 @@
 from aiogram import Router, F
 from aiogram.types import Message, CallbackQuery, FSInputFile
 from aiogram.fsm.context import FSMContext
-from database.crud import (add_in_cart, user_cart, 
-                           get_product, cart_minus,
-                           get_cart, cart_plus, 
-                           cart_product_del)
-from keyboards.inline import kb_in_cart_prod, kb_cart_menu
-from states.order import Order
+from database.crud.cart import (
+    add_in_cart, user_cart, 
+    get_products_in_cart, cart_minus,
+    get_cart, cart_plus, cart_product_del
+    )
+from database.crud.products import get_product
+from keyboards.inline.cart import kb_in_cart_prod, kb_cart_menu
 
 
-catr_rt = Router()
+cart_rt = Router()
 
 
 #Отрисовка меню корзины
 async def render_cart(user_id: int):
     cart = await user_cart(id=user_id)
+    products = await get_products_in_cart(user_id)
 
     count = 0
     total_price = 0
 
-    for i in cart:
-        product = await get_product(i.product_id)
-        count += i.quantity
-        total_price += product.price * i.quantity
-
-    if count == 0:
+    if not cart:
         return "Тут пусто! 😔"
     
-    return f"Итого: {count} товара на {total_price} ₽:"
+    product_map = {p.id: p for p in products}
+
+    for item in cart:
+        product = product_map.get(item.product_id)
+
+        if not product or not product.is_active:
+            continue  # на случай, если товар удалён
+
+        total_price += product.price * item.quantity
+        count += item.quantity
+
+    return f"Итого: {count} товара на {total_price:.2f} ₽:"
 
 
 #Отрисовка карточки товара в корзине
@@ -47,7 +55,7 @@ async def render_product(cart_id: int) -> dict:
 
 
 #Обработка add_basket
-@catr_rt.callback_query(F.data.startswith('add_basket:'))
+@cart_rt.callback_query(F.data.startswith('add_basket:'))
 async def add_basket(query: CallbackQuery, state: FSMContext):
     if await state.get_state() is not None:
         await query.answer("Вы находитесь на офрмление заказа!",
@@ -66,7 +74,7 @@ async def add_basket(query: CallbackQuery, state: FSMContext):
 
 
 #Обработка кнопки "🛒 Корзина"
-@catr_rt.message(F.text == "🛒 Корзина")
+@cart_rt.message(F.text == "🛒 Корзина")
 async def check_cart(message: Message, state: FSMContext):
     await state.clear()
     user_id = message.from_user.id
@@ -77,8 +85,8 @@ async def check_cart(message: Message, state: FSMContext):
 
 
 #Получение карточки товара в корзине
-@catr_rt.callback_query(F.data.startswith('cart_pr:'))
-async def product_in_cart(query: CallbackQuery, state: FSMContext):
+@cart_rt.callback_query(F.data.startswith('cart_pr:'))
+async def cart_open_product(query: CallbackQuery, state: FSMContext):
     if await state.get_state() is not None:
         await query.answer("Вы находитесь на офрмление заказа!",
                        show_alert=True)
@@ -89,14 +97,19 @@ async def product_in_cart(query: CallbackQuery, state: FSMContext):
 
     await query.answer("")
     await query.message.delete()
+    
+    if not result["image"]:
+        await query.message.answer(result["caption"])
+        return
+    
     await query.message.answer_photo(FSInputFile(result["image"]),
             caption = result["caption"],
             reply_markup= await kb_in_cart_prod(cart_id))
     
 
 #Добавление товара
-@catr_rt.callback_query(F.data.startswith('+:'))
-async def product_in_cart(query: CallbackQuery, state: FSMContext):
+@cart_rt.callback_query(F.data.startswith('+:'))
+async def cart_plus_handler(query: CallbackQuery, state: FSMContext):
     if await state.get_state() is not None:
         await query.answer("Вы находитесь на офрмление заказа!",
                        show_alert=True)
@@ -112,8 +125,8 @@ async def product_in_cart(query: CallbackQuery, state: FSMContext):
 
 
 #Убавление товара
-@catr_rt.callback_query(F.data.startswith('-:'))
-async def product_in_cart(query: CallbackQuery, state: FSMContext):
+@cart_rt.callback_query(F.data.startswith('-:'))
+async def cart_minus_handler(query: CallbackQuery, state: FSMContext):
     if await state.get_state() is not None:
         await query.answer("Вы находитесь на офрмление заказа!",
                        show_alert=True)
@@ -135,15 +148,14 @@ async def product_in_cart(query: CallbackQuery, state: FSMContext):
         return
     
     await query.message.delete()
-    await cart_product_del(cart_id)
     await query.message.answer(cart,
         reply_markup= await kb_cart_menu(id))
     
 
 
 #Удаление товара
-@catr_rt.callback_query(F.data.startswith('delete_pr:'))
-async def product_in_cart(query: CallbackQuery, state: FSMContext):
+@cart_rt.callback_query(F.data.startswith('delete_pr:'))
+async def cart_delete_handler(query: CallbackQuery, state: FSMContext):
     if await state.get_state() is not None:
         await query.answer("Вы находитесь на офрмление заказа!",
                        show_alert=True)
@@ -162,8 +174,8 @@ async def product_in_cart(query: CallbackQuery, state: FSMContext):
     
 
 #Назад к корзине
-@catr_rt.callback_query(F.data == 'cart')
-async def product_in_cart(query: CallbackQuery, state: FSMContext):
+@cart_rt.callback_query(F.data == 'cart')
+async def cart_back_handler(query: CallbackQuery, state: FSMContext):
     await query.answer("")
     await query.message.delete()
 

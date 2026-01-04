@@ -1,10 +1,10 @@
 from aiogram import Router, F
 from aiogram.types import Message, CallbackQuery, FSInputFile
 from aiogram.fsm.context import FSMContext
-from keyboards.inline import (kb_menu_categories, 
+from keyboards.inline.catalog import (kb_menu_categories, 
                               kb_in_product, 
                               kb_product_in_cat)
-from database.crud.catalog import get_product
+from database.crud.products import get_product
 
 
 #Роутер католога 
