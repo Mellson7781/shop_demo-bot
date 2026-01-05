@@ -44,6 +44,10 @@ async def create_order(user_id: int,
             for item in cart_items:
                 await session.delete(item)
 
+            
+            # 5 Возврат созданного заказа
+            return order
+
 
 #Получение заказа по id
 async def get_order(id: int) -> Orders | None:

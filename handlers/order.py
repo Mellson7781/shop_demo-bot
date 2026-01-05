@@ -36,7 +36,7 @@ async def start_order(query: CallbackQuery, state: FSMContext):
     
     order_created = await get_order_user(user_id)
     #Проверка на не оплаченые заказы
-    if order_created is None:
+    if order_created is not None:
         await query.answer(
             "У вас есть не оплаченый заказ!\n"
             "Перейдите в '📦 Мои заказы' и оплатите или отмените его.",
@@ -75,8 +75,6 @@ async def start_order(query: CallbackQuery, state: FSMContext):
         reply_markup=kb_orders_confirmation)
     
     
-
-
 #Продолжение оформление заказа, перевод в состояние оплаты
 @order_rt.callback_query(F.data == "order_next")
 async def go_to_payment(query: CallbackQuery, state: FSMContext):
@@ -88,20 +86,15 @@ async def go_to_payment(query: CallbackQuery, state: FSMContext):
     await query.answer("Оплата")
     data = await state.get_data()
 
-    await create_order(
+    order = await create_order(
         user_id=data.get("user_id"),
         total_price=data.get("total_price")
     )
 
-    await state.set_state(Order.payment)
-
-
-#Продолжение оформление заказа, перевод в состояние оплаты
-@order_rt.message(Order.payment)
-async def set_state_payment(message: Message, state: FSMContext):
-    user_id = message.from_user.id
-    order = await get_order_user(user_id)
-
-    await message.edit_text(f"💵Итого: {order.total_price} руб.",
-                                  reply_markup= await kb_payment(order.id))
     await state.clear()
+
+    await query.answer("Оплата")
+    await query.message.edit_text(f"💵Итого: {order.total_price} руб.",
+                                  reply_markup= await kb_payment(order.id))
+
+
