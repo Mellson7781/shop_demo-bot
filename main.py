@@ -7,7 +7,7 @@ from handlers.catalog import catalog_rt
 from handlers.cart import cart_rt
 from handlers.order import order_rt
 from handlers.payment import payment_rt
-from handlers.statick import statick_rt
+from handlers.statistics import statistics_rt
 
 
 #Загрузка из .env
@@ -32,7 +32,7 @@ async def main():
     #Подключение роутеров
     dp.include_routers(start_rt,
                     catalog_rt, cart_rt,
-                    order_rt, statick_rt,
+                    order_rt, statistics_rt,
                     payment_rt)
     #Запуск polling (Проще говоря запуск бота)
     await dp.start_polling(bot)

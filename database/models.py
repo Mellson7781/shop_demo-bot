@@ -19,6 +19,7 @@ class Users(Base):
     username: Mapped[Optional[str]] = mapped_column(String(40))
     first_name: Mapped[str] = mapped_column(String)
     last_name: Mapped[Optional[str]] = mapped_column(String)
+    admins: Mapped[bool] = mapped_column(Boolean, default=False)
     created_ad: Mapped[datetime] = mapped_column(DateTime, default=datetime.now())
 
     cart = relationship("Cart", back_populates="user")
@@ -50,7 +51,6 @@ class Products(Base):
 
     category = relationship("Categories", back_populates="product")
     cart = relationship("Cart", back_populates="product")
-    order_item = relationship("Order_items", back_populates= "product")
 
 
 #Таблица Cart
@@ -73,8 +73,8 @@ class Orders(Base):
     id: Mapped[int] = mapped_column(primary_key=True)
     user_id: Mapped[int] = mapped_column(ForeignKey('users.id'))
     total_price: Mapped[float] = mapped_column(Numeric(10, 2))
-    status: Mapped[str] = mapped_column(String(8))
-    payment_id: Mapped[str] = mapped_column(String)
+    status: Mapped[str] = mapped_column(String(30))
+    payment_id: Mapped[Optional[str]] = mapped_column(String, nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now())
 
     user = relationship("Users", back_populates="order")
@@ -87,12 +87,11 @@ class Order_items(Base):
 
     id: Mapped[int] = mapped_column(primary_key=True)
     order_id: Mapped[int] = mapped_column(ForeignKey('orders.id'))
-    product_id: Mapped[int] = mapped_column(ForeignKey('products.id'))
+    product_name: Mapped[str] = mapped_column()
     price: Mapped[float] = mapped_column(Numeric(10,2))
     quantity: Mapped[int] = mapped_column(Integer)
 
     order = relationship("Orders", back_populates="order_item")
-    product = relationship("Products", back_populates="order_item")
 
 
 async def create_table():
