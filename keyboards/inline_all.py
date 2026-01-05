@@ -1,7 +1,5 @@
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 from aiogram.utils.keyboard import InlineKeyboardBuilder
-from database.crud import (get_categories, get_products_in_cat,
-                           user_cart, get_product)
 
 
 #Подтверждение товаров в корзине

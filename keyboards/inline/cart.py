@@ -11,6 +11,7 @@ async def kb_cart_menu(id: int):
     if not cart:
         builder.button(text="🏷Перейти в каталог",
                        callback_data="catalog")
+        return builder.as_markup()
         
     product_map = {p.id: p for p in products}
 

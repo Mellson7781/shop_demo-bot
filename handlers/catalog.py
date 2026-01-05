@@ -50,7 +50,7 @@ async def product_info(query: CallbackQuery):
 
     if products.is_active:
         await query.message.answer_photo(
-            FSInputFile(products.image_url),
+            products.image_url,
             caption=f"💻Название: {products.name}\n\n"
             f"📄Описание:\n{products.description}\n\n"
             f"💳 Цена: {products.price}🏷 Руб",

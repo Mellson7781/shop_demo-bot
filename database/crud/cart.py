@@ -12,17 +12,21 @@ async def add_in_cart(
             async with session.begin():
                 in_cart = await session.scalars(
                     select(Cart).where(
-                        and_(Cart.user_id == user_id, Cart.product_id == product_id)
+                        and_(Cart.user_id == user_id, 
+                             Cart.product_id == product_id)
                     )
                 )
                 cart_item = in_cart.first()
 
                 if cart_item is None:
-                    session.add(Cart(user_id=user_id, product_id=product_id, quantity=1))
+                    session.add(Cart(user_id=user_id, 
+                                     product_id=product_id, 
+                                     quantity=1))
                 else:
                     await session.execute(
                         update(Cart)
-                        .where(and_(Cart.user_id == user_id, Cart.product_id == product_id))
+                        .where(and_(Cart.user_id == user_id, 
+                                    Cart.product_id == product_id))
                         .values(quantity=cart_item.quantity + 1)
                     )
                     
@@ -79,12 +83,9 @@ async def cart_minus(id: int):
             await session.execute(
                     update(Cart)
                     .where(Cart.id == id)
-                    .values(quantity = Cart.quantity - 1))
-            
-            cart_item = await get_cart(id)
+                    .values(quantity = Cart.quantity - 1)
+            )
 
-            if cart_item.quantity < 1:
-                await cart_product_del(id)
 
 
 #Удаление товара из корзины

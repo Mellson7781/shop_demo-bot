@@ -1,7 +1,7 @@
 from aiogram import Router, F
 from aiogram.types import Message, CallbackQuery
-from database.crud import get_orders
-from keyboards.inline import kb_filter_my_order
+from database.crud.statick import get_orders
+from keyboards.inline_all import kb_filter_my_order
 
 
 statick_rt = Router()

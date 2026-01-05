@@ -102,7 +102,7 @@ async def cart_open_product(query: CallbackQuery, state: FSMContext):
         await query.message.answer(result["caption"])
         return
     
-    await query.message.answer_photo(FSInputFile(result["image"]),
+    await query.message.answer_photo(result["image"],
             caption = result["caption"],
             reply_markup= await kb_in_cart_prod(cart_id))
     
@@ -136,20 +136,22 @@ async def cart_minus_handler(query: CallbackQuery, state: FSMContext):
 
     await cart_minus(cart_id)
 
-    cart = await render_cart(id)
     result = await render_product(cart_id)
 
     await query.answer("")
 
-    if result["q"] > 0:
-        await query.answer("")
-        await query.message.edit_caption(caption = result["caption"],
-        reply_markup= await kb_in_cart_prod(cart_id))
+    if result["q"] < 1:
+        await query.message.delete()
+        await cart_product_del(cart_id)
+        cart = await render_cart(id)
+        await query.message.answer(cart,
+            reply_markup= await kb_cart_menu(id))
         return
     
-    await query.message.delete()
-    await query.message.answer(cart,
-        reply_markup= await kb_cart_menu(id))
+    await query.message.edit_caption(caption = result["caption"],
+    reply_markup= await kb_in_cart_prod(cart_id))
+
+    
     
 
 

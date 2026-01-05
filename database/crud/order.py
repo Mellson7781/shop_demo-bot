@@ -1,13 +1,11 @@
-from sqlalchemy import select, update, delete
+from sqlalchemy import select, update, and_
 from database.session import AsyncSessionLocal
-from database.models import (Users, Categories, 
-                             Products, Cart, 
-                             Orders, Order_items)
+from database.models import Products, Orders, Order_items
+from database.crud.cart import user_cart
 
 
 #Добавление заказа в бд
 async def create_order(user_id: int, 
-                       name: str, contact: str,
                        total_price: float):
     async with AsyncSessionLocal() as session:
         async with session.begin():
@@ -21,8 +19,6 @@ async def create_order(user_id: int,
             #Создание заказа
             order = Orders(
                 user_id=user_id,
-                name = name,
-                contact = contact,
                 total_price = total_price,
                 status = "created",
                 payment_id = ""
@@ -47,8 +43,6 @@ async def create_order(user_id: int,
             # 4 Очистка корзины
             for item in cart_items:
                 await session.delete(item)
-            
-        return order.id
 
 
 #Получение заказа по id
@@ -84,12 +78,14 @@ async def order_status_canel(user_id: int):
                     .where(Orders.user_id == user_id,
                            Orders.status == "created")
                     .values(status = "canel"))
-            
 
-#Получение всех заказов пользователя
-async def get_orders(id: int) -> list[Orders]:
+
+#Получение заказа по user_id
+async def get_order_user(user_id: int) -> Orders | None:
     async with AsyncSessionLocal() as session:
         async with session.begin():
             order = await session.scalars(select(Orders)
-                                          .where(Orders.user_id == id))
-            return order.all()
+                        .where(and_(Orders.user_id == user_id, 
+                             Orders.status == "created"))
+            )
+            return order.first()

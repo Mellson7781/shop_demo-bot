@@ -1,7 +1,7 @@
 from aiogram import Bot, Router, F
 from aiogram.types import PreCheckoutQuery, CallbackQuery, Message
 from services.payment import send_payment_invoice
-from database.crud import order_status_paid, get_order
+from database.crud.order import order_status_paid, get_order
 
 
 payment_rt = Router()
@@ -31,7 +31,7 @@ async def process_pre_checkout(pre_checkout: PreCheckoutQuery):
 
 
 #Положительный ответ платежной системы
-@payment_rt.message()
+@payment_rt.message(F.successful_payment)
 async def successful_payment_handler(message: Message):
     if message.successful_payment:
         order_id = int(message.successful_payment.invoice_payload)
