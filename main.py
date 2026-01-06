@@ -8,6 +8,7 @@ from handlers.cart import cart_rt
 from handlers.order import order_rt
 from handlers.payment import payment_rt
 from handlers.statistics import statistics_rt
+from handlers.account import account_rt
 
 
 #Загрузка из .env
@@ -33,7 +34,7 @@ async def main():
     dp.include_routers(start_rt,
                     catalog_rt, cart_rt,
                     order_rt, statistics_rt,
-                    payment_rt)
+                    account_rt, payment_rt)
     #Запуск polling (Проще говоря запуск бота)
     await dp.start_polling(bot)
 

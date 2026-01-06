@@ -1,4 +1,4 @@
-from sqlalchemy import select
+from sqlalchemy import select, update
 from database.session import AsyncSessionLocal
 from database.models import Users
 
@@ -27,3 +27,18 @@ async def new_user_add(
                 last_name=last_name
             )
             session.add(user)
+
+
+#Обновление данных пользователя
+async def update_info_user(
+    user_id: int,
+    username: str,
+    last_name: str
+):
+    async with AsyncSessionLocal() as session:
+        async with session.begin():
+            await session.execute(
+                    update(Users)
+                    .where(Users.id == user_id)
+                    .values(username = username, 
+                            last_name = last_name))
