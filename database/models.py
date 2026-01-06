@@ -19,11 +19,35 @@ class Users(Base):
     username: Mapped[Optional[str]] = mapped_column(String(40))
     first_name: Mapped[str] = mapped_column(String)
     last_name: Mapped[Optional[str]] = mapped_column(String)
-    admins: Mapped[bool] = mapped_column(Boolean, default=False)
     created_ad: Mapped[datetime] = mapped_column(DateTime, default=datetime.now())
 
     cart = relationship("Cart", back_populates="user")
     order = relationship("Orders", back_populates="user")
+    admin = relationship("Admins", back_populates="user")
+
+
+#Таблица админов
+class Admins(Base):
+    __tablename__ = "admins"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
+    role: Mapped[str] = mapped_column(String(30))
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now())
+
+    user = relationship("Users", back_populates="admin")
+    log = relationship("LogAdmins", back_populates="admin")
+
+
+#Таблиц действий админов
+class LogAdmins(Base):
+    __tablename__ = "log_admins"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    admin_id: Mapped[int] = mapped_column(ForeignKey("admins.id"))
+    action: Mapped[str] = mapped_column(String)
+
+    admin = relationship("Admins", back_populates="log")
 
 
 #Таблица Categories

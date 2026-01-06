@@ -7,3 +7,9 @@ class OrderStatus(str, Enum):
     CANCELED = "canceled"
     ASSEMBLED = "assembled"
     COMPLEDET = "completed"
+
+
+class AdminsRole(str, Enum):
+    SUPER = "super"
+    SENIOR = "senior"
+    MANAGER = "manager"
