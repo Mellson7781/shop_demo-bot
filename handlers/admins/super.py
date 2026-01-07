@@ -170,7 +170,7 @@ async def list_admins_active(query: CallbackQuery):
     text = "🗒 Список действий:\n\n"
     for i, row in enumerate(rows, start=1):
         text += (
-            f"Админ №{i}\n"
+            f"#{i}\n"
             f"👤 @{row.username} ({row.role})\n"
             f"📝 {row.action}\n"
             f"📆 {row.created_at}\n\n"
