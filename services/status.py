@@ -11,5 +11,4 @@ class OrderStatus(str, Enum):
 
 class AdminsRole(str, Enum):
     SUPER = "super"
-    SENIOR = "senior"
     MANAGER = "manager"

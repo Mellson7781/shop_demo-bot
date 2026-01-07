@@ -76,7 +76,7 @@ async def order_status_paid(id: int, pay_id: str):
 
 
 #Изменение статуса у заказов на отмененый
-async def order_status_canel(order_id: int):
+async def order_status_cancel(order_id: int):
     async with AsyncSessionLocal() as session:
         async with session.begin():
             await session.execute(

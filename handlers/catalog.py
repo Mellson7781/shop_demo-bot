@@ -5,6 +5,7 @@ from keyboards.inline.catalog import (kb_menu_categories,
                               kb_in_product, 
                               kb_product_in_cat)
 from database.crud.products import get_product
+from aiogram.exceptions import TelegramBadRequest
 
 
 #Роутер католога 
@@ -48,13 +49,26 @@ async def product_info(query: CallbackQuery):
     product_id = int(query.data.split('_')[1])
     products = await get_product(id=product_id)
 
+    if not products:
+        await query.answer("Упс, мы не можем получить информация по товару!",
+                           show_alert=True)
+
     if products.is_active:
-        await query.message.answer_photo(
-            products.image_url,
-            caption=f"💻Название: {products.name}\n\n"
-            f"📄Описание:\n{products.description}\n\n"
-            f"💳 Цена: {products.price}🏷 Руб",
-            reply_markup = await kb_in_product(id=products.id))
+        try:
+            await query.message.answer_photo(
+                products.image_url,
+                caption=f"💻Название: {products.name}\n\n"
+                f"📄Описание:\n{products.description}\n\n"
+                f"💳 Цена: {products.price}🏷 Руб",
+                reply_markup = await kb_in_product(product_id)
+            )
+        except TelegramBadRequest:      
+            await query.message.answer(text=
+                f"💻Название: {products.name}\n\n"
+                f"📄Описание:\n{products.description}\n\n"
+                f"💳 Цена: {products.price}🏷 Руб",
+                reply_markup = await kb_in_product(product_id)
+                )
 
 
 #Кнопка назад

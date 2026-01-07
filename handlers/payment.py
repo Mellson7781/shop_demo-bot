@@ -2,6 +2,7 @@ from aiogram import Bot, Router, F
 from aiogram.types import PreCheckoutQuery, CallbackQuery, Message
 from services.payment import send_payment_invoice
 from database.crud.order import order_status_paid, get_order
+from services.status import OrderStatus
 
 
 payment_rt = Router()
@@ -17,6 +18,10 @@ async def send_invoice(query: CallbackQuery, bot: Bot):
     order = await get_order(order_id)
     total_price = order.total_price
 
+    if order.status != OrderStatus.CREATED.value:
+        await query.answer("Этот заказ уже нельзя оплатить!",
+                           show_alert=True)
+        return
     await send_payment_invoice(
         bot, query.message.chat.id, 
         order_id=order_id,

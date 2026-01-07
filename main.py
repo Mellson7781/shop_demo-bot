@@ -10,6 +10,7 @@ from handlers.payment import payment_rt
 from handlers.statistics import statistics_rt
 from handlers.account import account_rt
 from handlers.admins.cmd_admin import cmd_admin_rt
+from handlers.admins.manager import manager_rt
 
 
 #Загрузка из .env
@@ -36,7 +37,7 @@ async def main():
                     catalog_rt, cart_rt,
                     order_rt, statistics_rt,
                     account_rt, cmd_admin_rt,
-                    payment_rt)
+                    manager_rt, payment_rt)
     #Запуск polling (Проще говоря запуск бота)
     await dp.start_polling(bot)
 
