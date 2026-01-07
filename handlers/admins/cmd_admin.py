@@ -40,9 +40,13 @@ async def is_super(message: Message):
     
     admin = await get_is_admin(user_id)
 
+    if not admin:
+        await message.answer("🚫Отказано в доступе!")
+        return
+
     if admin.role != AdminsRole.SUPER.value:
         await message.answer("🚫Отказано в доступе!")
         return
     
-    await message.answer("🗃Выберете список действий",
+    await message.answer("🗃Выберете пункт меню:",
                          reply_markup=menu_super)

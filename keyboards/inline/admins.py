@@ -14,7 +14,7 @@ menu_manager = InlineKeyboardMarkup(
         [InlineKeyboardButton(text="✅Активные",
                 callback_data="assembled")],
         [InlineKeyboardButton(text="🗂Завершённые",
-                callback_data="completed")],
+                callback_data="adm_completed")],
         [InlineKeyboardButton(text="🛒Товары",
                 callback_data="admins_products")]
     ]
@@ -65,9 +65,9 @@ async def kb_status(order_id: int, status: str):
 menu_super = InlineKeyboardMarkup(
     inline_keyboard=[
         [InlineKeyboardButton(text="🤖Админы",
-                callback_data="admins_cat")],
+                callback_data="list_admins")],
         [InlineKeyboardButton(text="📄Список действий админов",
-                callback_data="admins_products")]
+                callback_data="admins_active")]
     ]
 )
 
@@ -95,13 +95,13 @@ async def kb_product_in_cat_by_admin(id: int):
         builder.button(text=item.name, 
                        callback_data=f"adm_product:{item.id}")
     
-    builder.button(text="🔙 Назад к категориям",
+    builder.button(text="🔙 Назад",
                    callback_data="manager")
     builder.adjust(1)
     return builder.as_markup()
 
 
-#Меню внутри заказа дял менеджера
+#Меню внутри заказа для менеджера
 async def kb_in_product_by_admin(product_id: int, is_active: bool):
     builder = InlineKeyboardBuilder()
 
@@ -115,3 +115,20 @@ async def kb_in_product_by_admin(product_id: int, is_active: bool):
 
     builder.adjust(1)
     return builder.as_markup()
+
+
+#Меню изменения админов
+delete_or_create_admin = InlineKeyboardMarkup(
+    inline_keyboard=[
+        [InlineKeyboardButton(text="✅Добавить", callback_data="add_admin"),
+         InlineKeyboardButton(text="❌Удалить", callback_data="del_admin"),],
+         [InlineKeyboardButton(text="🔙Назад", callback_data="super")]
+    ]
+)
+
+#Меню изменения админов
+back_super = InlineKeyboardMarkup(
+    inline_keyboard=[
+         [InlineKeyboardButton(text="🔙Назад", callback_data="super")]
+    ]
+)

@@ -1,7 +1,7 @@
-from sqlalchemy import select, update
+from sqlalchemy import select, update, delete
 from database.session import AsyncSessionLocal
-from database.models import Admins, Orders, Order_items, Users, Products
-from services.status import OrderStatus
+from database.models import Admins, Orders, Order_items, Users, Products, LogAdmins
+from services.status import AdminsRole
 
 
 #Проверка на админа
@@ -13,6 +13,16 @@ async def get_is_admin(user_id: int) -> Admins | None:
                 .where(Admins.user_id == user_id)
             )
             return admin.first()
+
+
+#Получение всех админов
+async def get_all_admins() -> list[Admins]:
+    async with AsyncSessionLocal() as session:
+        async with session.begin():
+            admins = await session.scalars(
+                select(Admins)
+            )
+            return admins.all()
 
 
 #Получение заказов по статусу
@@ -87,3 +97,112 @@ async def update_product_status(product_id: int, res: bool) -> bool:
             await session.commit()
 
             return result.rowcount > 0
+
+
+#Получение пользователя по username
+async def get_user_by_usename(username: str) -> Users | None:
+    async with AsyncSessionLocal() as session:
+        result = await session.scalar(select(Users)
+                                      .where(Users.username == username))
+        return result
+
+
+#Скрыть\показать товар
+async def update_product_status(product_id: int, res: bool) -> bool:
+    async with AsyncSessionLocal() as session:
+            result = await session.execute(
+                update(Products)
+                .where(Products.id == product_id)
+                .values(is_active = res)
+            )
+            await session.commit()
+
+            return result.rowcount > 0
+
+
+#Добавить нового админа
+async def add_new_admin(
+        user_id: int,
+        username: str,
+):
+    async with AsyncSessionLocal() as session:
+        async with session.begin():
+            admin = Admins(
+                user_id = user_id,
+                username = username,
+                role = AdminsRole.MANAGER.value
+            )
+            session.add(admin)
+
+
+#Проверка на админа по id
+async def get_is_admin_by_id(admin_id: int) -> Admins | None:
+    async with AsyncSessionLocal() as session:
+        async with session.begin():
+            admin = await session.scalars(
+                select(Admins)
+                .where(Admins.id == admin_id)
+            )
+            return admin.first()
+
+
+#Удаление админа из бд
+async def del_admin_by_id(admin_id: int) -> bool:
+    async with AsyncSessionLocal() as session:
+        result = await session.execute(
+            delete(Admins)
+            .where(Admins.id == admin_id)
+        )
+
+        await session.commit()
+        return result.rowcount > 0
+
+
+#Получение всех админов
+async def all_admins_active() -> list[LogAdmins]:
+    async with AsyncSessionLocal() as session:
+        async with session.begin():
+            result = await session.scalars(
+                select(LogAdmins)
+            )
+            return result.all()
+
+
+#Получение пользователя по id заказа
+async def get_user_by_order_id(order_id: int) -> Users:
+    async with AsyncSessionLocal() as session:
+        async with session.begin():
+            user = await session.scalars(
+                select(Users)
+                .join(Users.order)
+                .where(Orders.id == order_id)
+                )
+            return user.first()
+
+
+async def all_admins_active():
+    async with AsyncSessionLocal() as session:
+        result = await session.execute(
+            select(
+                LogAdmins.id,
+                LogAdmins.action,
+                LogAdmins.created_at,
+                Admins.username,
+                Admins.role
+            )
+            .join(Admins, Admins.id == LogAdmins.admin_id)
+            .order_by(LogAdmins.created_at.desc())
+        )
+        return result.all()
+
+
+#Логи
+async def add_admin_log(admin_id: int, action: str):
+    async with AsyncSessionLocal() as session:
+        async with session.begin():
+            session.add(
+                LogAdmins(
+                    admin_id=admin_id,
+                    action=action
+                )
+            )

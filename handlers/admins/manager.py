@@ -1,4 +1,4 @@
-from aiogram import F, Router, BaseMiddleware
+from aiogram import F, Router
 from aiogram.types import CallbackQuery
 from aiogram.exceptions import TelegramBadRequest
 
@@ -24,25 +24,16 @@ from keyboards.inline.admins import (
 )
 
 from services.status import OrderStatus
+from middlewares.admin_check import AdminMiddleware
+from middlewares.admin_logger import AdminLoggerMiddleware
 
 
 manager_rt = Router()
 
 
-# =======================
-# Middleware администратора
-# =======================
-class AdminMiddleware(BaseMiddleware):
-    async def __call__(self, handler, event, data):
-        user_id = event.from_user.id
-        if not await get_is_admin(user_id):
-            if hasattr(event, "answer"):
-                await event.answer("🚫 Отказано в доступе!", show_alert=True)
-            return
-        return await handler(event, data)
-
-
 manager_rt.callback_query.middleware(AdminMiddleware())
+manager_rt.callback_query.middleware(AdminLoggerMiddleware())
+manager_rt.message.middleware(AdminLoggerMiddleware())
 
 
 # =======================
@@ -166,7 +157,7 @@ async def manager_assembled(query: CallbackQuery):
     )
 
 
-@manager_rt.callback_query(F.data == "completed")
+@manager_rt.callback_query(F.data == "adm_completed")
 async def manager_completed(query: CallbackQuery):
     await show_orders(
         query,

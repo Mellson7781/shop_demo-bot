@@ -16,7 +16,7 @@ class Users(Base):
     __tablename__ = 'users'
 
     id: Mapped[int] = mapped_column(BIGINT, primary_key=True)
-    username: Mapped[Optional[str]] = mapped_column(String(40))
+    username: Mapped[Optional[str]] = mapped_column(String(40), unique=True)
     first_name: Mapped[str] = mapped_column(String)
     last_name: Mapped[Optional[str]] = mapped_column(String)
     created_ad: Mapped[datetime] = mapped_column(DateTime, default=datetime.now())
@@ -32,6 +32,7 @@ class Admins(Base):
 
     id: Mapped[int] = mapped_column(primary_key=True)
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
+    username: Mapped[str] = mapped_column(String, onupdate="CASCADE", unique=True)
     role: Mapped[str] = mapped_column(String(30))
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now())
 
@@ -46,6 +47,7 @@ class LogAdmins(Base):
     id: Mapped[int] = mapped_column(primary_key=True)
     admin_id: Mapped[int] = mapped_column(ForeignKey("admins.id"))
     action: Mapped[str] = mapped_column(String)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now())
 
     admin = relationship("Admins", back_populates="log")
 
