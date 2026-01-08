@@ -111,7 +111,7 @@ async def not_completed(query: CallbackQuery):
     orders_assembled = await status_get_order(user_id, OrderStatus.ASSEMBLED.value)
     orders = orders_paid + orders_assembled
     if not orders:
-        await query.message.answer("😉 Не завершенных заказов нет!", reply_markup=back_menu_my_orders)
+        await safe_edit_message(query.message, text="😉 Не завершенных заказов нет!", reply_markup=back_menu_my_orders)
         return
 
     orders_id = sorted(o.id for o in orders)
