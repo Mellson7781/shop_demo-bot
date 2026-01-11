@@ -1,0 +1,5 @@
+.git
+__pycashe__
+*.pyc
+.env
+.venv
