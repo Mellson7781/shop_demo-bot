@@ -7,7 +7,7 @@ from database.crud.cart import (
 )
 from database.crud.products import get_product
 from keyboards.inline.cart import kb_in_cart_prod, kb_cart_menu
-import aiohttp
+from aiogram.exceptions import TelegramBadRequest
 
 cart_rt = Router()
 
@@ -137,8 +137,13 @@ async def cart_plus_handler(query: CallbackQuery, state: FSMContext):
     result = await render_product(cart_id)
 
     await query.answer()
-    await query.message.edit_caption(caption=result["caption"],
-                                    reply_markup=await kb_in_cart_prod(cart_id))
+    try:
+        await query.message.edit_caption(caption=result["caption"],
+                                        reply_markup=await kb_in_cart_prod(cart_id))
+    except TelegramBadRequest:
+        await query.message.edit_text(text=result["caption"],
+                                      reply_markup=await kb_in_cart_prod(cart_id))
+
 
 
 # ======================
@@ -162,8 +167,12 @@ async def cart_minus_handler(query: CallbackQuery, state: FSMContext):
         cart_text = await render_cart(user_id)
         await query.message.answer(cart_text, reply_markup=await kb_cart_menu(user_id))
     else:
-        await query.message.edit_caption(caption=result["caption"],
-                                        reply_markup=await kb_in_cart_prod(cart_id))
+        try:
+            await query.message.edit_caption(caption=result["caption"],
+                                            reply_markup=await kb_in_cart_prod(cart_id))
+        except TelegramBadRequest:
+            await query.message.edit_text(text=result["caption"],
+                                      reply_markup=await kb_in_cart_prod(cart_id))
 
 
 # ======================

@@ -22,11 +22,16 @@ async def send_invoice(query: CallbackQuery, bot: Bot):
         await query.answer("Этот заказ уже нельзя оплатить!",
                            show_alert=True)
         return
-    await send_payment_invoice(
-        bot, query.message.chat.id, 
-        order_id=order_id,
-        total_price=total_price
-    )
+    
+    try:
+        await send_payment_invoice(
+            bot, query.message.chat.id, 
+            order_id=order_id,
+            total_price=total_price
+        )
+    except Exception as e:
+        print(e)
+        await query.message.answer("Слишком маленькая сумма корзины для оплаты!")
 
 
 #Подтверждение оплаты

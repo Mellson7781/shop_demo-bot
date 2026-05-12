@@ -101,6 +101,7 @@ async def cancel_payment(query: CallbackQuery):
 
     await order_status_cancel(order_id)
     await query.answer("Оплата заказа отменена!", show_alert=True)
+    await query.message.delete()
 
 # Не завершенные заказы
 @statistics_rt.callback_query(F.data == "not_completed")
